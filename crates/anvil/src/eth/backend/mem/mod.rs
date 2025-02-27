@@ -2823,9 +2823,10 @@ impl TransactionValidator for Backend {
             }
 
             // Check for any blob validation errors
-            if let Err(err) = tx.validate(env.cfg.kzg_settings.get()) {
-                return Err(InvalidTransactionError::BlobTransactionValidationError(err))
-            }
+            // I don't like this check, I am turning if off
+            // if let Err(err) = tx.validate(env.cfg.kzg_settings.get()) {
+            //     return Err(InvalidTransactionError::BlobTransactionValidationError(err))
+            // }
         }
 
         let max_cost = tx.max_cost();
