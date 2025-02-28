@@ -153,6 +153,29 @@ pub fn transaction_request_to_typed(
                 TxEip4844WithSidecar::from_tx_and_sidecar(tx, sidecar),
             )))
         }
+        // EIP4844 without sidecar
+        (Some(3), None, _, _, _, _, Some(_), _, to) => {
+            let tx = TxEip4844 {
+                nonce: nonce.unwrap_or_default(),
+                max_fee_per_gas: max_fee_per_gas.unwrap_or_default(),
+                max_priority_fee_per_gas: max_priority_fee_per_gas.unwrap_or_default(),
+                max_fee_per_blob_gas: max_fee_per_blob_gas.unwrap_or_default(),
+                gas_limit: gas.unwrap_or_default(),
+                value: value.unwrap_or(U256::ZERO),
+                input: input.into_input().unwrap_or_default(),
+                to: match to.unwrap_or(TxKind::Create) {
+                    TxKind::Call(to) => to,
+                    TxKind::Create => Address::ZERO,
+                },
+                chain_id: 0,
+                access_list: access_list.unwrap_or_default(),
+                blob_versioned_hashes: blob_versioned_hashes.unwrap_or_default(),
+            };
+            Some(TypedTransactionRequest::EIP4844(TxEip4844Variant::TxEip4844(tx)))
+            // Some(TypedTransactionRequest::EIP4844(TxEip4844Variant::TxEip4844WithSidecar(
+            //     TxEip4844WithSidecar::from_tx_and_sidecar(tx, sidecar),
+            // )))
+        }
         _ => None,
     }
 }

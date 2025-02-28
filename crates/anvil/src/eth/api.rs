@@ -2875,6 +2875,8 @@ impl EthApi {
 
         let gas_limit = request.gas.unwrap_or_else(|| self.backend.gas_limit());
 
+        let request_typed = transaction_request_to_typed(request.clone());
+
         let request = match transaction_request_to_typed(request) {
             Some(TypedTransactionRequest::Legacy(mut m)) => {
                 m.nonce = nonce;
@@ -2927,7 +2929,7 @@ impl EthApi {
                     TxEip4844Variant::TxEip4844(mut m) => {
                         m.nonce = nonce;
                         m.chain_id = chain_id;
-                        m.gas_limit = gas_limit;
+                        m.gas_limit = gas_limit;    
                         if max_fee_per_gas.is_none() {
                             m.max_fee_per_gas = self.gas_price();
                         }
@@ -2938,6 +2940,7 @@ impl EthApi {
                                 .map_or(0, |g| g.blob_gasprice)
                         }                        
                         TxEip4844Variant::TxEip4844(m)
+
                     }
                 })
             }
@@ -2945,7 +2948,9 @@ impl EthApi {
                 m.gas_limit = gas_limit;
                 TypedTransactionRequest::Deposit(m)
             }
-            None => return Err(BlockchainError::FailedToDecodeTransaction),
+            None => {
+                return Err(BlockchainError::FailedToDecodeTransaction)
+            },
         };
         Ok(request)
     }
