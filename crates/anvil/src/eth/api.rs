@@ -2923,8 +2923,21 @@ impl EthApi {
                     }
                     // It is not valid to receive a TxEip4844 without a sidecar, therefore
                     // we must reject it.
-                    TxEip4844Variant::TxEip4844(_) => {
-                        return Err(BlockchainError::FailedToDecodeTransaction)
+                    // wait, i changed my mind, we can keep it
+                    TxEip4844Variant::TxEip4844(mut m) => {
+                        m.nonce = nonce;
+                        m.chain_id = chain_id;
+                        m.gas_limit = gas_limit;
+                        if max_fee_per_gas.is_none() {
+                            m.max_fee_per_gas = self.gas_price();
+                        }
+                        if max_fee_per_blob_gas.is_none() {
+                            m.max_fee_per_blob_gas = self
+                                .excess_blob_gas_and_price()
+                                .unwrap_or_default()
+                                .map_or(0, |g| g.blob_gasprice)
+                        }                        
+                        TxEip4844Variant::TxEip4844(m)
                     }
                 })
             }
